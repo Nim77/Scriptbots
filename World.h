@@ -61,7 +61,8 @@ private:
     int fy;
     float food[conf::WIDTH/conf::CZ][conf::HEIGHT/conf::CZ];
     bool CLOSED; //if environment is closed, then no random bots are added per time interval
-
+    // temp
+    float temp[conf::WIDTH][conf::HEIGHT];
     bool touch;
 };
 

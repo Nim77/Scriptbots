@@ -14,16 +14,15 @@ World::World() :
         current_epoch(0),
         idcounter(0),
         FW(conf::WIDTH/conf::CZ),
-        FH(conf::HEIGHT/conf::CZ),
-        CLOSED(false)
+        FH(conf::HEIGHT/conf::CZ)
 {
     addRandomBots(conf::NUMBOTS);
 
+	
+    //inititalize food layer	
     srand(time(0));
-
-	double rand1; // store temp random float
-		
-    //inititalize food layer
+	double rand1; // store temp random float to save randf() call
+	
     for (int x=0;x<FW;x++) {
        for (int y=0;y<FH;y++) {
 
@@ -34,10 +33,18 @@ World::World() :
 		   }
        }
     }
+ // Setting temperature of the world
+    for(int i=0;i<conf::WIDTH/2;i++)
+      {
+        for(int j=0;j<conf::HEIGHT/2;j++)
+         {
+           temp[i][j]=0.2;
+         }
+      }
 
-	// Decide if world if closed
-	if(conf::CLOSED)
-		CLOSED = true;
+
+	// Decide if world if closed based on settings.h
+	CLOSED = conf::CLOSED;
 }
 
 
@@ -95,7 +102,7 @@ void World::update()
     }
 	else
 	{
-		//Add Random food
+		//Add Random food model - default
 		if (modcounter%conf::FOODADDFREQ==0) {
 			fx=randi(0,FW);
 			fy=randi(0,FH);
@@ -132,10 +139,13 @@ void World::update()
     for (i=0;i<agents.size();i++) {
         healthloss = conf::LOSS_BASE; // base amount of health lost every turn for being alive
 
+
+
 		// remove health based on wheel speed
 		if(agents[i].boost) { // is using boost			
 			healthloss +=
-				conf::LOSS_SPEED * conf::BOTSPEED * (abs(agents[i].w1) + abs(agents[i].w2)) * conf::BOOSTSIZEMULT * agents[i].boost;
+				conf::LOSS_SPEED * conf::BOTSPEED * (abs(agents[i].w1) + abs(agents[i].w2))
+				* conf::BOOSTSIZEMULT * agents[i].boost;
 		} else { // no boost
 			healthloss +=
 				conf::LOSS_SPEED * conf::BOTSPEED * (abs(agents[i].w1) + abs(agents[i].w2));
@@ -144,20 +154,44 @@ void World::update()
 		// shouting costs energy.
 		healthloss += conf::LOSS_SHOUTING*agents[i].soundmul;
 
+                 // less health loss if bots move with other agents
+                if(agents[i].in[9]<=0.1) // found from the values of the sensor is in generally
+               { agents[i].health +=0.000001; //giving extra health
+	      }
+
 		//process temperature preferences
         //calculate temperature at the agents spot. (based on distance from equator)
-        dd = 2.0*abs(agents[i].pos.x/conf::WIDTH - 0.5);
-        discomfort = abs(dd-agents[i].temperature_preference);
-        discomfort = discomfort*discomfort;
-        if (discomfort<0.08)
-			discomfort=0;
-        healthloss +=conf::LOSS_TEMP*discomfort;
+       // dd = 2.0*abs(agents[i].pos.x/conf::WIDTH - 0.5);
+        //discomfort = abs(dd-agents[i].temperature_preference);
+        //discomfort = discomfort*discomfort;
+        //if (discomfort<0.08)
+	//		discomfort=0;
+        //healthloss +=conf::LOSS_TEMP*discomfort;
 
-		
+		//temperature setting of world
+                dd = 2.0*abs(agents[i].pos.x/conf::WIDTH - 0.5);
+                //cout<<"distance value"<<dd<<"\n";
+
+            //  if(agents[i].pos.x>=conf::WIDTH/2 && agents[i].pos.y>=conf::HEIGHT/2)
+              //  {
+                //  healthloss=0.0005;
+                 //}
+               
+              // if(agents[i].pos.x<=conf::WIDTH/2 && agents[i].pos.y>=conf::HEIGHT/2)
+             //   {
+               //   healthloss=0.0005;
+                // } if(agents[i].pos.x>=conf::WIDTH/2 && agents[i].pos.y>=conf::HEIGHT/2)
+               // {
+                 // healthloss=0.0005;
+                // } if(agents[i].pos.x>=conf::WIDTH/2 && agents[i].pos.y>=conf::HEIGHT/2)
+                // {
+                  // healthloss=0.0005;
+                 //}
 		// apply the health changes
         agents[i].health -= healthloss;
 
-		//----------------------------------------------------------------------------------------------		
+		//------------------------------------------------------------------------------------------
+		
 		//remove dead agents and distribute food
 
         //if this agent was spiked this round as well (i.e. killed). This will make it so that
@@ -169,7 +203,9 @@ void World::update()
             //first figure out how many are around, to distribute this evenly
             numaround=0;
             for (j=0;j<agents.size();j++) {
-                if (agents[j].herbivore < .5 && agents[j].health > .1) { //only carnivores get food. not same agent as dying
+				//only carnivores get food. not same agent as dying
+                if (agents[j].herbivore < .1 && agents[j].health > 0) {
+					
                     d= (agents[i].pos-agents[j].pos).length();
                     if (d<conf::FOOD_DISTRIBUTION_RADIUS) {
                         numaround++;
@@ -187,7 +223,8 @@ void World::update()
             if (numaround>0) {
                 //distribute its food evenly
                 for (j=0;j<agents.size();j++) {
-					if (agents[j].herbivore < .5 && agents[j].health > .1) { //only carnivores get food. not same agent as dying
+					//only carnivores get food. not same agent as dying					
+					if (agents[j].herbivore < .1 && agents[j].health > 0) {
 
 						d= (agents[i].pos-agents[j].pos).length();
                         if (d<conf::FOOD_DISTRIBUTION_RADIUS) {
@@ -199,18 +236,15 @@ void World::update()
 								health += percent_carnivore ^ 2 * agemult * 5
 								          -----------------------------------
 									               numaround ^ 1.25
-							    
 							 */
-							//ents[j].health += 5*(1-agents[j].herbivore)*(1-agents[j].herbivore)/pow(numaround,1.25)*agemult;
+							agents[j].health +=
+								5*(1-agents[j].herbivore)*(1-agents[j].herbivore)/
+								pow(numaround,1.25)*agemult;
+							
 							// make this bot reproduce sooner
-                            //ents[j].repcounter -= 6*(1-agents[j].herbivore)*(1-agents[j].herbivore)/pow(numaround,1.25)*agemult;
+                            agents[j].repcounter -= 6*(1-agents[j].herbivore)*
+								(1-agents[j].herbivore)/pow(numaround,1.25)*agemult;
 
-							// NEW FORMULA:
-							// split evenly between all agents that can eat others:
-							agents[j].health += agents[i].health / numaround * conf::FOOD_MEAT_VALUE;
-							
-							agents[j].repcounter -= conf::REPRATEC * .5; // eating makes them reproduce up to twice as fast!
-							
                             if (agents[j].health>2)
 								agents[j].health=2; //cap it!
 							
@@ -227,6 +261,8 @@ void World::update()
         }
 
     }
+
+	// Delete dead agents
     vector<Agent>::iterator iter= agents.begin();
 
     while (iter != agents.end()) {
@@ -237,16 +273,19 @@ void World::update()
         }
     }
 
-    //handle reproduction
+    // Handle reproduction
     for (i=0;i<agents.size();i++) {
-        if (agents[i].repcounter<0 && agents[i].health>conf::REP_MIN_HEALTH && modcounter%15==0 && randf(0,1)<0.1) {
+        if (agents[i].repcounter<0 && agents[i].health>conf::REP_MIN_HEALTH &&
+			modcounter%15==0 && randf(0,1)<0.1) {
 			//agent is healthy (REP_MIN_HEALTH) and is ready to reproduce.
 			//Also inject a bit non-determinism
 
 			//the parent splits it health evenly with all of its babies
             agents[i].health -= agents[i].health / (conf::BABIES + 1);
+
+			//add conf::BABIES new agents to agents[]
+            reproduce(i, agents[i].MUTRATE1, agents[i].MUTRATE2);
 			
-            reproduce(i, agents[i].MUTRATE1, agents[i].MUTRATE2); //this adds conf::BABIES new agents to agents[]
             agents[i].repcounter =
 				agents[i].herbivore*randf(conf::REPRATEH-0.1,conf::REPRATEH+0.1) +
 				(1-agents[i].herbivore)*randf(conf::REPRATEC-0.1,conf::REPRATEC+0.1);
@@ -324,12 +363,14 @@ void World::setInputs()
             if (i==j) continue;
             Agent* a2= &agents[j];
 
+			// Do manhattan-distance estimation
             if (	a->pos.x < a2->pos.x - conf::DIST ||
             		a->pos.x > a2->pos.x + conf::DIST ||
             		a->pos.y > a2->pos.y + conf::DIST ||
             		a->pos.y < a2->pos.y - conf::DIST)
             	continue;
 
+			// standard distance formula
             float d= (a->pos-a2->pos).length();
 
             if (d<conf::DIST) {
@@ -436,8 +477,18 @@ void World::setInputs()
         a->in[17]= abs(sin(modcounter/a->clockf2));
         a->in[18]= cap(hearaccum);
         a->in[19]= cap(blood);
-        a->in[20]= discomfort;   
-        
+        a->in[20]= discomfort;
+		a->in[21] = touch;
+		
+ //cout<<"Value of sound sensor"<< a->in[9]<<"\n";
+
+		// Now assign the "plan" from the last outputs as the new inputs
+		// PREV_PLAN is input 21-30
+		// NEXT_PLAN is output 9-17
+		for(int i = 9; i <= 17; ++i)
+		{
+			a->in[i+13] = a->out[i];
+		}
     }
 }
 
@@ -446,6 +497,7 @@ void World::processOutputs()
     //assign meaning
     //LEFT RIGHT R G B SPIKE BOOST SOUND_MULTIPLIER GIVING
     // 0    1    2 3 4   5     6         7             8
+
     for (int i=0;i<agents.size();i++) {
         Agent* a= &agents[i];
 
@@ -463,13 +515,19 @@ void World::processOutputs()
         if (a->spikeLength<g)
             a->spikeLength+=conf::SPIKESPEED;
         else if (a->spikeLength>g)
-            a->spikeLength= g; //its easy to retract spike, just hard to put it up
+            a->spikeLength= g; //its easy to retract spike, just hard to put it up. 
     }
 
     //move bots
     //#pragma omp parallel for
     for (int i=0;i<agents.size();i++) {
         Agent* a= &agents[i];
+
+         int current_posx=agents[i].pos.x;
+int current_posy=agents[i].pos.y;
+
+//cout<<"Current positions of the Agent"<< current_posx<<","<<current_posy<<"\n";
+
 
         Vector2f v(conf::BOTRADIUS/2, 0);
         v.rotate(a->angle + M_PI/2);
@@ -488,14 +546,20 @@ void World::processOutputs()
         //move bots
         Vector2f vv= w2p- a->pos;
         vv.rotate(-BW1);
+ 
         a->pos= w2p-vv;
         a->angle -= BW1;
-        if (a->angle<-M_PI) a->angle= M_PI - (-M_PI-a->angle);
+        if (a->angle<-M_PI)
+			a->angle= M_PI - (-M_PI-a->angle);
         vv= a->pos - w1p;
         vv.rotate(BW2);
         a->pos= w1p+vv;
         a->angle += BW2;
-        if (a->angle>M_PI) a->angle= -M_PI + (a->angle-M_PI);
+        if (a->angle>M_PI)
+			a->angle= -M_PI + (a->angle-M_PI);
+
+	if(a->pos.x-current_posx>=50 && a->pos.y-current_posy>=50)
+	  agents[i].health-=0.05;
 
         //wrap around the map
         /*if (a->pos.x<0) a->pos.x= conf::WIDTH+a->pos.x;
@@ -504,10 +568,14 @@ void World::processOutputs()
         if (a->pos.y>=conf::HEIGHT) a->pos.y= a->pos.y-conf::HEIGHT;*/
 
         //have peetree dish borders
-        if (a->pos.x<0) a->pos.x = 0;
-		if (a->pos.x>=conf::WIDTH) a->pos.x= conf::WIDTH - 1;
-		if (a->pos.y<0) a->pos.y= 0;
-		if (a->pos.y>=conf::HEIGHT) a->pos.y= conf::HEIGHT - 1;
+        if (a->pos.x<0)
+			a->pos.x = 0;
+		if (a->pos.x>=conf::WIDTH)
+			a->pos.x= conf::WIDTH - 1;
+		if (a->pos.y<0)
+			a->pos.y= 0;
+		if (a->pos.y>=conf::HEIGHT)
+			a->pos.y= conf::HEIGHT - 1;
     }
 
     //process food intake for herbivors
@@ -557,41 +625,41 @@ void World::processOutputs()
             for (int j=0;j<agents.size();j++) {
                 
                 if (i==j) continue;
-
                 float d= (agents[i].pos-agents[j].pos).length();
 
                 if (d<2*conf::BOTRADIUS) {
                     //these two are in collision and agent i has extended spike and is going decent fast!
                     Vector2f v(1,0);
                     v.rotate(agents[i].angle);
-                    //float diff= v.angle_between(agents[j].pos-agents[i].pos);
-                    //if (fabs(diff)<M_PI/8) {
+                    float diff= v.angle_between(agents[j].pos-agents[i].pos);
+                    if (fabs(diff)<M_PI/8) {
                         //bot i is also properly aligned!!! that's a hit
-					float mult=1;
-					if (agents[i].boost) mult= conf::BOOSTSIZEMULT;
-					float DMG= conf::SPIKEMULT*agents[i].spikeLength*max(fabs(agents[i].w1),fabs(agents[i].w2))*conf::BOOSTSIZEMULT;
+                        float mult=1;
+                        if (agents[i].boost) mult= conf::BOOSTSIZEMULT;
+                        float DMG= conf::SPIKEMULT*agents[i].spikeLength*max(fabs(agents[i].w1),fabs(agents[i].w2))*conf::BOOSTSIZEMULT;
 
-					agents[j].health-= DMG;
+                        agents[j].health-= DMG;
 
-					if (agents[i].health>2) agents[i].health=2; //cap health at 2
-					agents[i].spikeLength= 0; //retract spike back down
+                        if (agents[i].health>2) agents[i].health=2; //cap health at 2
+                        agents[i].spikeLength= 0; //retract spike back down
 
-					agents[i].initEvent(40*DMG,1,1,0); //yellow event means bot has spiked other bot. nice!
+                        agents[i].initEvent(40*DMG,1,1,0); //yellow event means bot has spiked other bot. nice!
 
-					Vector2f v2(1,0);
-					v2.rotate(agents[j].angle);
-					float adiff= v.angle_between(v2);
-					if (fabs(adiff)<M_PI/2) {
-						//this was attack from the back. Retract spike of the other agent (startle!)
-						//this is done so that the other agent cant right away "by accident" attack this agent
-						agents[j].spikeLength= 0;
-					}
-					agents[j].spiked= true; //set a flag saying that this agent was hit this turn
-				}
-
-			}
-		}
-	}
+                        Vector2f v2(1,0);
+                        v2.rotate(agents[j].angle);
+                        float adiff= v.angle_between(v2);
+                        if (fabs(adiff)<M_PI/2) {
+                            //this was attack from the back. Retract spike of the other agent (startle!)
+                            //this is done so that the other agent cant right away "by accident" attack this agent
+                            agents[j].spikeLength= 0;
+                        }
+                        
+                        agents[j].spiked= true; //set a flag saying that this agent was hit this turn
+                    }
+                }
+            }
+        }
+    }
 }
 
 void World::brainsTick()
@@ -760,6 +828,11 @@ std::pair< int,int > World::numHerbCarnivores() const
 
 int World::numAgents() const
 {
+	if(agents.size() == 0)
+	{
+		cout << "Population is extinct at epoch " << current_epoch  << endl;
+		exit(1);
+	}
     return agents.size();
 }
 
