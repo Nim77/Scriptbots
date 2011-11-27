@@ -170,23 +170,21 @@ void World::update()
 
 		//temperature setting of world
                 dd = 2.0*abs(agents[i].pos.x/conf::WIDTH - 0.5);
-                //cout<<"distance value"<<dd<<"\n";
-
-            //  if(agents[i].pos.x>=conf::WIDTH/2 && agents[i].pos.y>=conf::HEIGHT/2)
-              //  {
-                //  healthloss=0.0005;
-                 //}
-               
-              // if(agents[i].pos.x<=conf::WIDTH/2 && agents[i].pos.y>=conf::HEIGHT/2)
-             //   {
-               //   healthloss=0.0005;
-                // } if(agents[i].pos.x>=conf::WIDTH/2 && agents[i].pos.y>=conf::HEIGHT/2)
-               // {
-                 // healthloss=0.0005;
-                // } if(agents[i].pos.x>=conf::WIDTH/2 && agents[i].pos.y>=conf::HEIGHT/2)
-                // {
-                  // healthloss=0.0005;
-                 //}
+                
+              if(agents[i].pos.x>=conf::WIDTH/2 && agents[i].pos.y>=conf::HEIGHT/2)
+                {
+                  healthloss=0.0005;
+                 }
+               if(agents[i].pos.x<=conf::WIDTH/2 && agents[i].pos.y>=conf::HEIGHT/2)
+                {
+                  healthloss=0.0005;
+                 } if(agents[i].pos.x>=conf::WIDTH/2 && agents[i].pos.y>=conf::HEIGHT/2)
+                {
+                  healthloss=0.0005;
+                 } if(agents[i].pos.x>=conf::WIDTH/2 && agents[i].pos.y>=conf::HEIGHT/2)
+                {
+                  healthloss=0.0005;
+                 }
 		// apply the health changes
         agents[i].health -= healthloss;
 
@@ -321,7 +319,7 @@ void World::growFood(int x, int y)
 
 void World::setInputs()
 {
-    //P1 R1 G1 B1 FOOD P2 R2 G2 B2 SOUND SMELL HEALTH P3 R3 G3 B3 CLOCK1 CLOCK 2 HEARING     BLOOD_SENSOR   TEMPERATURE_SENSOR
+    //P1 R1 G1 B1 FOOD P2 R2 G2 B2 SOUND SMELL HEALTH P3 R3 G3 B3 CLOCK1 CLOCK 2 HEARING     BLOOD_SENSOR   TEMPERATURE_SENSOR  4,9,10,18,
     //0   1  2  3  4   5   6  7 8   9     10     11   12 13 14 15 16       17      18           19                 20
 
     float PI8=M_PI/8/2; //pi/8/2
@@ -459,6 +457,11 @@ void World::setInputs()
         float dd= 2.0*abs(a->pos.x/conf::WIDTH - 0.5);
         float discomfort= abs(dd - a->temperature_preference);
 		
+		//initializing the inl vector
+		//for(int x=0;x<21;x++)
+		//{ a->inl[x]=0;
+		//}
+
         a->in[0]= cap(p1);
         a->in[1]= cap(r1);
         a->in[2]= cap(g1);
@@ -479,7 +482,58 @@ void World::setInputs()
         a->in[19]= cap(blood);
         a->in[20]= discomfort;
 		a->in[21] = touch;
+
+		//cout<<" Values of in[4],[9],[10],[18]"<<a->in[4]<<" "<<a->in[9]<<" "<<a->in[10]<<" "<<a->in[18]<<"\n";
+
+        // when there is no input
+         if(a->in[4] ==0 && a->in[9] ==0 && a->in[10]==0 && a->in[18]==0)
+           {
+                 a->out[0] = 1;
+                 a->out[1]= 0;
+	   
+           }
 		
+if (a->in[19]>=0.5)
+
+{
+    a->health+=0.0005;
+}
+
+ // 4,9/10,18
+
+		//if(a->inl[4]-a->in[4]<=0.001 && a->inl[9]-a->in[9]<=0.001 && a->inl[10]-a->in[10]<=0.001 && a->inl[18]-a->in[18]<=0.001 )
+		//{
+			//change output to something else...  make a function and call that function 
+
+		//}
+		
+		// initialise the first time iteration values...set them to zero or may be some random value
+		// initalise inl vector
+		// check values of the input so that 0.001 is good to check
+
+		//to store the inputs of previous tick
+	/*	a1->inl[0]= a->in[0];
+		a1->inl[1]= a->in[1];
+a1->inl[2]= a->in[2];
+a1->inl[3]= a->in[3];*/
+                       //a->inl[4]= a->in[4];
+//a1->inl[5]= a->in[5];
+//a1->inl[6]= a->in[6];
+//a1->inl[7]= a->in[7];
+//a1->inl[8]= a->in[8];
+			//a->inl[9]= a->in[9];
+			//a->inl[10]= a->in[10];
+//a1->inl[11]= a->in[11];
+//a1->inl[12]= a->in[12];
+//a1->inl[13]= a->in[13];
+//a1->inl[14]= a->in[14];
+//		a1->inl[15]= a->in[15];
+//		a1->inl[16]= a->in[16];
+//		a1->inl[17]= a->in[17];
+			//a->inl[18]= a->in[18];
+		/*a1->inl[20]= a->in[20];
+		a1->inl[21]= a->in[21];*/
+
  //cout<<"Value of sound sensor"<< a->in[9]<<"\n";
 
 		// Now assign the "plan" from the last outputs as the new inputs
@@ -523,12 +577,6 @@ void World::processOutputs()
     for (int i=0;i<agents.size();i++) {
         Agent* a= &agents[i];
 
-         int current_posx=agents[i].pos.x;
-int current_posy=agents[i].pos.y;
-
-//cout<<"Current positions of the Agent"<< current_posx<<","<<current_posy<<"\n";
-
-
         Vector2f v(conf::BOTRADIUS/2, 0);
         v.rotate(a->angle + M_PI/2);
 
@@ -546,7 +594,6 @@ int current_posy=agents[i].pos.y;
         //move bots
         Vector2f vv= w2p- a->pos;
         vv.rotate(-BW1);
- 
         a->pos= w2p-vv;
         a->angle -= BW1;
         if (a->angle<-M_PI)
@@ -557,9 +604,6 @@ int current_posy=agents[i].pos.y;
         a->angle += BW2;
         if (a->angle>M_PI)
 			a->angle= -M_PI + (a->angle-M_PI);
-
-	if(a->pos.x-current_posx>=50 && a->pos.y-current_posy>=50)
-	  agents[i].health-=0.05;
 
         //wrap around the map
         /*if (a->pos.x<0) a->pos.x= conf::WIDTH+a->pos.x;

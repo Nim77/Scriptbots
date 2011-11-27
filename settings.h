@@ -11,7 +11,7 @@ namespace conf {
 	// WORLD / WINDOW SETTINGS -------------------------------------
     const int WIDTH = 4200;  //width and height of simulation
     const int HEIGHT = 2600;
-    const int WWIDTH = 1400;  //window width and height
+    const int WWIDTH = 1000;  //window width and height
     const int WHEIGHT = 900;
     
     const int CZ = 50; //cell size in pixels, for food squares. Should divide well into Width Height
