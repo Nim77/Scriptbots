@@ -455,7 +455,7 @@ void World::setInputs()
         //temperature varies from 0 to 1 across screen.
         //it is 0 at equator (in middle), and 1 on edges. Agents can sense discomfort
         float dd= 2.0*abs(a->pos.x/conf::WIDTH - 0.5);
-        float discomfort= abs(dd - a->temperature_preference);
+       // float discomfort= abs(dd - a->temperature_preference);
 		
 		//initializing the inl vector
 		//for(int x=0;x<21;x++)
@@ -480,24 +480,12 @@ void World::setInputs()
         a->in[17]= abs(sin(modcounter/a->clockf2));
         a->in[18]= cap(hearaccum);
         a->in[19]= cap(blood);
-        a->in[20]= discomfort;
+     //   a->in[20]= discomfort;
 		a->in[21] = touch;
 
 		//cout<<" Values of in[4],[9],[10],[18]"<<a->in[4]<<" "<<a->in[9]<<" "<<a->in[10]<<" "<<a->in[18]<<"\n";
 
-        // when there is no input
-         if(a->in[4] ==0 && a->in[9] ==0 && a->in[10]==0 && a->in[18]==0)
-           {
-                 a->out[0] = 1;
-                 a->out[1]= 0;
-	   
-           }
-		
-if (a->in[19]>=0.5)
-
-{
-    a->health+=0.0005;
-}
+        
 
  // 4,9/10,18
 
@@ -539,10 +527,31 @@ a1->inl[3]= a->in[3];*/
 		// Now assign the "plan" from the last outputs as the new inputs
 		// PREV_PLAN is input 21-30
 		// NEXT_PLAN is output 9-17
+
+//extra inputs
+for(int i=0;i<=9;i++)
+{a->in[i+13]=a->out[i];
+}
+
 		for(int i = 9; i <= 17; ++i)
 		{
 			a->in[i+13] = a->out[i];
 		}
+
+// when there is no input
+         if(a->in[4] ==0 && a->in[9] ==0 && a->in[10]==0 && a->in[18]==0)
+           {
+                 a->out[0] = 1;
+                 a->out[1]= 0;
+	   
+           }
+		
+//when bot senses another bot with both eyes
+if (a->in[19]>=0.5)
+
+{
+    a->health+=0.0005;
+}
     }
 }
 
