@@ -1,4 +1,4 @@
-#define INPUTSIZE 40 // 22 + 9 = 31
+#define INPUTSIZE 31 // 22 + 9 = 31
 #define OUTPUTSIZE 18 // 9 + 9 = 18
 #define BRAINSIZE 150
 #define CONNS 4

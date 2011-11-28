@@ -528,15 +528,7 @@ a1->inl[3]= a->in[3];*/
 		// PREV_PLAN is input 21-30
 		// NEXT_PLAN is output 9-17
 
-//extra inputs
-for(int i=0;i<=9;i++)
-{a->in[i+13]=a->out[i];
-}
 
-		for(int i = 9; i <= 17; ++i)
-		{
-			a->in[i+13] = a->out[i];
-		}
 
 // when there is no input
          if(a->in[4] ==0 && a->in[9] ==0 && a->in[10]==0 && a->in[18]==0)
@@ -552,6 +544,17 @@ if (a->in[19]>=0.5)
 {
     a->health+=0.0005;
 }
+
+//extra inputs
+//for(int i=0;i<=9;i++)
+//{a->in[i+13]=a->out[i];
+//}
+
+		for(int i = 9; i <= 17; ++i)
+		{
+			a->in[i+13] = a->out[i];
+		}
+
     }
 }
 
