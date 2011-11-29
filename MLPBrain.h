@@ -13,10 +13,11 @@ public:
 
     std::vector<float> w; //weight of each connecting box
     std::vector<int> id; //id in boxes[] of the connecting box
+    
     float kp; //damper
     float gw; //global w
     float bias;
-
+    
     //state variables
     float target; //target value this node is going toward
     float out; //current output
@@ -30,6 +31,9 @@ class MLPBrain
 public:
 
     std::vector<MLPBox> boxes;
+float hw;
+    float hb;
+ 
 
     MLPBrain();
     MLPBrain(const MLPBrain &other);

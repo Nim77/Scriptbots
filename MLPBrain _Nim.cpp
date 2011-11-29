@@ -24,6 +24,7 @@ MLPBox::MLPBox()
 
     out=0;
     target=0;
+    
 }
 
 MLPBrain::MLPBrain()
@@ -46,8 +47,11 @@ MLPBrain::MLPBrain()
                 boxes[i].id[j]= randi(0,INPUTSIZE);
             }
         }
+       int z=1;
+ hw[0]=0.0;
+    hb[0]=0.0;
     }
-
+ 
     //do other initializations
     init();
 }
@@ -73,7 +77,7 @@ void MLPBrain::init()
 void MLPBrain::tick(vector< float >& in, vector< float >& out)
 {
     //do a single tick of the brain
-
+   
     //take first few boxes and set their out to in[].
     for (int i=0;i<INPUTSIZE;i++) {
         boxes[i].out= in[i];
@@ -89,27 +93,25 @@ void MLPBrain::tick(vector< float >& in, vector< float >& out)
             float val= boxes[idx].out;
             acc= acc + val*abox->w[j];
         }
+        
+ //if(abox->gw==hw[z-1] && abox->bias==hb[z-1])
+  //       {    
+//float r1 = (float)rand()/(float)RAND_MAX;
+//float r2 = (float)rand()/(float)RAND_MAX;
+
+             // abox->gw +=r1;
+             // abox->bias+= r2; 
+         }
+    
+
+          hw[z] = abox->gw;
+          hb[z] = abox->bias;
+          z++;
+       
+       
         acc*= abox->gw;
         acc+= abox->bias;
-        
-        //put through sigmoid
-        acc= 1.0/(1.0+exp(-acc));
-        
-        abox->target= acc;
-    }
-
-for (int i=INPUTSIZE;i<BRAINSIZE;i++) {
-        MLPBox* abox= &boxes[i];
-
-        float acc=0;
-        for (int j=0;j<CONNS;j++) {
-            int idx=abox->id[j];
-            float val= boxes[idx].out;
-            acc= acc + val*abox->w[j];
-        }
-        acc*= abox->gw;
-        acc+= abox->bias;
-        
+         
         //put through sigmoid
         acc= 1.0/(1.0+exp(-acc));
         

@@ -1,7 +1,7 @@
 #include "MLPBrain.h"
 using namespace std;
-
-
+#include <stdio.h>
+#include <iostream>
 MLPBox::MLPBox()
 {
 
@@ -28,6 +28,8 @@ MLPBox::MLPBox()
 
 MLPBrain::MLPBrain()
 {
+   hw = 1.99304;
+   hb = -0.188013;
 
     //constructor
     for (int i=0;i<BRAINSIZE;i++) {
@@ -89,8 +91,22 @@ void MLPBrain::tick(vector< float >& in, vector< float >& out)
             float val= boxes[idx].out;
             acc= acc + val*abox->w[j];
         }
-        acc*= abox->gw;
+       acc*= abox->gw;
         acc+= abox->bias;
+
+//cout<< acc <<"\n";
+
+     
+        if(abox->gw-hw<=2)
+        acc*=randf(0,2);
+       if(abox->bias-hb<=-0.3)
+        acc+=randf(0,1);
+
+       hw = abox->gw;
+       hb = abox->bias;
+      // cout<<hw<<" "<<hb<<"\n";
+
+        
         
         //put through sigmoid
         acc= 1.0/(1.0+exp(-acc));

@@ -482,6 +482,7 @@ void World::setInputs()
         a->in[19]= cap(blood);
      //   a->in[20]= discomfort;
 		a->in[21] = touch;
+                
 
 		//cout<<" Values of in[4],[9],[10],[18]"<<a->in[4]<<" "<<a->in[9]<<" "<<a->in[10]<<" "<<a->in[18]<<"\n";
 
@@ -528,14 +529,25 @@ a1->inl[3]= a->in[3];*/
 		// PREV_PLAN is input 21-30
 		// NEXT_PLAN is output 9-17
 
+a->in[22]=rand() % 1 + 0;
 
 
 // when there is no input
          if(a->in[4] ==0 && a->in[9] ==0 && a->in[10]==0 && a->in[18]==0)
            {
-                 a->out[0] = 1;
-                 a->out[1]= 0;
-	   
+                 
+             if(a->in[22]<=0.4)
+                { a->out[0] = rand()%1+0;
+                  a->out[1]= rand()%1+0;
+                }	
+             if(a->in[22]>0.4 && a->in[22] <=0.7)
+               {  a->out[0] = rand()%1+0;
+                  a->out[1] = rand()%1+0;
+               }   
+             if(a->in[22]>0.7)
+               { a->out[0] = rand()%1+0;
+                 a->out[1] = rand()%1+0;
+                }
            }
 		
 //when bot senses another bot with both eyes
