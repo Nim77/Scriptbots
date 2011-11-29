@@ -483,6 +483,8 @@ void World::setInputs()
      //   a->in[20]= discomfort;
 		a->in[21] = touch;
                 
+if(a->in[21] == 1)
+a->health-=0.005;
 
 		//cout<<" Values of in[4],[9],[10],[18]"<<a->in[4]<<" "<<a->in[9]<<" "<<a->in[10]<<" "<<a->in[18]<<"\n";
 
@@ -537,16 +539,16 @@ a->in[22]=rand() % 1 + 0;
            {
                  
              if(a->in[22]<=0.4)
-                { a->out[0] = rand()%1+0;
-                  a->out[1]= rand()%1+0;
+                { a->out[0] = randf(0,1);
+                  a->out[1]= randf(0,1);
                 }	
              if(a->in[22]>0.4 && a->in[22] <=0.7)
-               {  a->out[0] = rand()%1+0;
-                  a->out[1] = rand()%1+0;
+               {  a->out[0] = randf(0,1);
+                  a->out[1] = randf(0,1);
                }   
              if(a->in[22]>0.7)
-               { a->out[0] = rand()%1+0;
-                 a->out[1] = rand()%1+0;
+               { a->out[0] = randf(0,1);
+                 a->out[1] = randf(0,1);
                 }
            }
 		
@@ -554,7 +556,7 @@ a->in[22]=rand() % 1 + 0;
 if (a->in[19]>=0.5)
 
 {
-    a->health+=0.0005;
+    a->health+=0.005;
 }
 
 //extra inputs
